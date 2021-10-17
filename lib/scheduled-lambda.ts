@@ -4,6 +4,12 @@ import * as lambda from '@aws-cdk/aws-lambda';
 import {NodejsFunction, NodejsFunctionProps} from "@aws-cdk/aws-lambda-nodejs";
 import * as events from "@aws-cdk/aws-events";
 import * as targets from "@aws-cdk/aws-events-targets";
+import {LogGroup, LogGroupProps} from '@aws-cdk/aws-logs';
+
+interface LambdaProps extends NodejsFunctionProps {
+  // name is determined by the lambda created
+  logGroupProps?: Omit<LogGroupProps, "logGroupName">;
+}
 
 // no targets, because the lambda is the only target
 interface RuleProps extends Omit<events.RuleProps, "targets"> {
@@ -12,7 +18,7 @@ interface RuleProps extends Omit<events.RuleProps, "targets"> {
 }
 
 interface ScheduledLambdaProps {
-  lambdaProps?: NodejsFunctionProps;
+  lambdaProps?: LambdaProps;
   ruleProps: RuleProps;
 }
 
@@ -33,10 +39,16 @@ export class ScheduledLambda extends cdk.Construct {
   }
 
   private createLambda(lambdaProps?: ScheduledLambdaProps["lambdaProps"]) {
-    return new NodejsFunction(this, "Lambda", {
+    const lambda = new NodejsFunction(this, "Lambda", {
       ...defaultLambdaProps,
       ...(lambdaProps ?? {}),
     });
+    new LogGroup(this, 'LogGroup', {
+      // this name makes it replace the default log group
+      logGroupName: '/aws/lambda/' + lambda.functionName,
+      ...(lambdaProps?.logGroupProps ?? {})
+    });
+    return lambda;
   }
 
   private scheduleLambda(ruleProps: ScheduledLambdaProps["ruleProps"]) {
