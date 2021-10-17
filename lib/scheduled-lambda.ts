@@ -12,7 +12,7 @@ interface RuleProps extends Omit<events.RuleProps, "targets"> {
 }
 
 interface ScheduledLambdaProps {
-  lambdaProps: NodejsFunctionProps;
+  lambdaProps?: NodejsFunctionProps;
   ruleProps: RuleProps;
 }
 
@@ -32,10 +32,10 @@ export class ScheduledLambda extends cdk.Construct {
     this.scheduleLambda(props.ruleProps);
   }
 
-  private createLambda(config: ScheduledLambdaProps["lambdaProps"]) {
+  private createLambda(config?: ScheduledLambdaProps["lambdaProps"]) {
     return new NodejsFunction(this, "Lambda", {
       ...defaultLambdaProps,
-      ...config,
+      ...(config ?? {}),
     });
   }
 
