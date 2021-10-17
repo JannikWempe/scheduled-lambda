@@ -32,15 +32,15 @@ export class ScheduledLambda extends cdk.Construct {
     this.scheduleLambda(props.ruleProps);
   }
 
-  private createLambda(config?: ScheduledLambdaProps["lambdaProps"]) {
+  private createLambda(lambdaProps?: ScheduledLambdaProps["lambdaProps"]) {
     return new NodejsFunction(this, "Lambda", {
       ...defaultLambdaProps,
-      ...(config ?? {}),
+      ...(lambdaProps ?? {}),
     });
   }
 
-  private scheduleLambda(ruleConfig: RuleProps) {
-    const rule = new events.Rule(this, 'Schedule', ruleConfig);
+  private scheduleLambda(ruleProps: ScheduledLambdaProps["ruleProps"]) {
+    const rule = new events.Rule(this, 'Schedule', ruleProps);
     rule.addTarget(new targets.LambdaFunction(this.lambda));
   }
 }
